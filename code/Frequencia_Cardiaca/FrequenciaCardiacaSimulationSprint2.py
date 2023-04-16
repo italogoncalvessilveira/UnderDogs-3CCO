@@ -37,10 +37,14 @@ def regraRandomica():
 def insert_db(nomePaciente,idadePaciente,generoPaciente,frequenciaCardiaca,dataLeitura,espacoUtilizado,tempoUtilizado,zonaDisponibilidade):
     try:  
         mydb = mysql.connector.connect(
-            host = "localhost",
-            user = "root",
-            password = "urubu100",
-            database = "frequenciacardiaca"
+            # hostname="localhost",
+            # username="root",
+            # password="renato2002",
+            # database = "frequenciacardiaca"
+            user= "roott",
+            password= "Urubu100",
+            host= "frequenciacardiaca.mysql.database.azure.com",
+            database= "frequenciacardiaca"
         )
 
         if mydb.is_connected():
