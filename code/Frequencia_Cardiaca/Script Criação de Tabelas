@@ -1,0 +1,20 @@
+show databases;
+
+use frequenciacardiaca;
+
+CREATE TABLE FrequenciaCardiacaXPerfomance (
+idLeitura INT PRIMARY KEY AUTO_INCREMENT,
+nomePaciente VARCHAR(45),
+idadePaciente VARCHAR(3),
+generoPaciente CHAR(1),
+frequenciaCardiaca VARCHAR(3),
+dataLeitura DATETIME,
+espacoUtilizado VARCHAR(20),
+tempoUtilizado VARCHAR(20),
+zonaDisponibilidade VARCHAR(50)
+);
+
+select * from FrequenciaCardiacaXPerfomance;
+
+truncate table FrequenciaCardiacaXPerfomance;
+
