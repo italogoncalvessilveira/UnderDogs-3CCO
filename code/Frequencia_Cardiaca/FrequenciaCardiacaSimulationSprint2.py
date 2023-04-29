@@ -11,6 +11,7 @@ client = IoTHubDeviceClient.create_from_connection_string(conn_str)
 
 
 
+
 class Paciente:
     def __init__(self, nome, idade, genero):
         self.nome = nome
@@ -40,15 +41,24 @@ def regraRandomica():
             elif(varRandomica == 1):
                     FrequenciaCardiacaPaciente.append(random.randrange(FrequenciaCardiacaPaciente[-1] - 2,FrequenciaCardiacaPaciente[-1]))
 
-       
-def insert_iotHub(nomePaciente,idadePaciente,generoPaciente,frequenciaCardiaca,dataLeitura,espacoUtilizado,tempoUtilizado,zonaDisponibilidade):
-            dados = {'nomePaciente': nomePaciente, 'idadePaciente': idadePaciente, 'generoPaciente': generoPaciente, 'frequenciaCardiaca': frequenciaCardiaca, 'dataLeitura': dataLeitura,'espacoUtilizado': espacoUtilizado,'tempoUtilizado': tempoUtilizado, 'zonaDisponibilidade': zonaDisponibilidade}
+     
+def insert_iotHub(nomePaciente,idadePaciente,generoPaciente,frequenciaCardiaca,dataLeitura,espacoUtilizado,tempoUtilizado,zonaDisponibilidade,bateriaDisponivel):
+        
+        while bateriaDisponivel > 0:    
+            bateriaDisponivelFormat = "{:.2f}".format(bateriaDisponivel)   
+           
+            dados = {'nomePaciente': nomePaciente, 'idadePaciente': idadePaciente, 'generoPaciente': generoPaciente, 'frequenciaCardiaca': frequenciaCardiaca, 'dataLeitura': dataLeitura,'espacoUtilizado': espacoUtilizado,'tempoUtilizado': tempoUtilizado, 'zonaDisponibilidade': zonaDisponibilidade, 'bateriaDisponivel': bateriaDisponivelFormat}
         
             mensagem_json = json.dumps(dados)
             msg = Message(mensagem_json)
             client.send_message(msg)
-
+            tamanhoMensagem = (len(str(msg))) / 1024 
             client.disconnect()
+            
+            
+            print(dados)
+            print(f"Tamanho da Mensagem em KB = {tamanhoMensagem}")
+            bateriaDisponivel -= 0.01
 
 def insert_db(nomePaciente,idadePaciente,generoPaciente,frequenciaCardiaca,dataLeitura,espacoUtilizado,tempoUtilizado,zonaDisponibilidade):
     try:  
@@ -75,7 +85,7 @@ def insert_db(nomePaciente,idadePaciente,generoPaciente,frequenciaCardiaca,dataL
             
             mydb.commit()
 
-            print(mycursor.rowcount, f"registro inserido sobre o Paciente {nomePaciente} na AZ {zonaDisponibilidade}")           
+            #print(mycursor.rowcount, f"registro inserido sobre o Paciente {nomePaciente} na AZ {zonaDisponibilidade}")           
             
             
     except mysql.connector.Error as e:
@@ -95,14 +105,14 @@ try:
 
     FrequenciaCardiacaPaciente = []
 
-    
+    bateriaDisponivel = 100
     while True:
             
             inicio_processamento = time.time()
             dataLeitura = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime())
             if (len(FrequenciaCardiacaPaciente) == 0):
                 FrequenciaCardiacaPaciente.append(random.randrange(57, 120))
-
+ 
             else:
                 regraRandomica()
             
@@ -116,7 +126,7 @@ try:
             tamanhodaLista = len(vetTempoUtilizado)
           
             insert_db(Paciente1.nome, Paciente1.idade, Paciente1.genero, FrequenciaCardiacaPaciente[-1],dataLeitura, espaco, duracao, "localhost")
-            insert_iotHub(Paciente1.nome, Paciente1.idade, Paciente1.genero, FrequenciaCardiacaPaciente[-1],dataLeitura, espaco, duracao, "localhost")
+            insert_iotHub(Paciente1.nome, Paciente1.idade, Paciente1.genero, FrequenciaCardiacaPaciente[-1],dataLeitura, espaco, duracao, "localhost",bateriaDisponivel)
             
             #if len(FrequenciaCardiacaPaciente) % 10 == 0:
             #   plotagem()
