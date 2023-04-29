@@ -3,6 +3,13 @@ import time
 import random
 from matplotlib import pyplot as plot
 import sys
+from azure.iot.device import IoTHubDeviceClient, Message
+import json
+
+conn_str = "HostName=IoTHubAulaIot.azure-devices.net;DeviceId=PrimeiroDeviceAulaIoT;SharedAccessKey=B1zsx4PbQhuv8JfJBnk2J8IlyN+7MjN16XUimClPnQE="
+client = IoTHubDeviceClient.create_from_connection_string(conn_str)
+
+
 
 class Paciente:
     def __init__(self, nome, idade, genero):
@@ -33,7 +40,16 @@ def regraRandomica():
             elif(varRandomica == 1):
                     FrequenciaCardiacaPaciente.append(random.randrange(FrequenciaCardiacaPaciente[-1] - 2,FrequenciaCardiacaPaciente[-1]))
 
+       
+def insert_iotHub(nomePaciente,idadePaciente,generoPaciente,frequenciaCardiaca,dataLeitura,espacoUtilizado,tempoUtilizado,zonaDisponibilidade):
+            dados = {'nomePaciente': nomePaciente, 'idadePaciente': idadePaciente, 'generoPaciente': generoPaciente, 'frequenciaCardiaca': frequenciaCardiaca, 'dataLeitura': dataLeitura,'espacoUtilizado': espacoUtilizado,'tempoUtilizado': tempoUtilizado, 'zonaDisponibilidade': zonaDisponibilidade}
         
+            mensagem_json = json.dumps(dados)
+            msg = Message(mensagem_json)
+            client.send_message(msg)
+
+            client.disconnect()
+
 def insert_db(nomePaciente,idadePaciente,generoPaciente,frequenciaCardiaca,dataLeitura,espacoUtilizado,tempoUtilizado,zonaDisponibilidade):
     try:  
         mydb = mysql.connector.connect(
@@ -56,10 +72,11 @@ def insert_db(nomePaciente,idadePaciente,generoPaciente,frequenciaCardiaca,dataL
             sql_query = "INSERT INTO FrequenciaCardiacaXPerfomance(nomePaciente,idadePaciente,generoPaciente,frequenciaCardiaca,dataLeitura,espacoUtilizado,tempoUtilizado,zonaDisponibilidade) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
             val = [nomePaciente,idadePaciente,generoPaciente,frequenciaCardiaca,dataLeitura,espacoUtilizado,tempoUtilizado,zonaDisponibilidade]
             mycursor.execute(sql_query, val)
-
+            
             mydb.commit()
 
-            print(mycursor.rowcount, f"registro inserido sobre o Paciente {nomePaciente} na AZ {zonaDisponibilidade}")
+            print(mycursor.rowcount, f"registro inserido sobre o Paciente {nomePaciente} na AZ {zonaDisponibilidade}")           
+            
             
     except mysql.connector.Error as e:
         print("Erro ao conectar com o MySQL", e)
@@ -98,7 +115,9 @@ try:
 
             tamanhodaLista = len(vetTempoUtilizado)
           
-            insert_db(Paciente1.nome, Paciente1.idade, Paciente1.genero, FrequenciaCardiacaPaciente[-1],dataLeitura, espaco, duracao, "us-east-1")
+            insert_db(Paciente1.nome, Paciente1.idade, Paciente1.genero, FrequenciaCardiacaPaciente[-1],dataLeitura, espaco, duracao, "localhost")
+            insert_iotHub(Paciente1.nome, Paciente1.idade, Paciente1.genero, FrequenciaCardiacaPaciente[-1],dataLeitura, espaco, duracao, "localhost")
+            
             #if len(FrequenciaCardiacaPaciente) % 10 == 0:
             #   plotagem()
                   
