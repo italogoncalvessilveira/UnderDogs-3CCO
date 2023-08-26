@@ -6,7 +6,7 @@ import sys
 from azure.iot.device import IoTHubDeviceClient, Message
 import json
 
-conn_str = "HostName=IoTHubAulaIot.azure-devices.net;DeviceId=PrimeiroDeviceAulaIoT;SharedAccessKey=B1zsx4PbQhuv8JfJBnk2J8IlyN+7MjN16XUimClPnQE="
+conn_str = "HostName=IoTHubDefinitivo.azure-devices.net;DeviceId=dispositivo-integracao-azureAws;SharedAccessKey=gOp+MTWrr0jsJrVIJ+mz1XQoS84e83TsAll2TPGa15o="
 client = IoTHubDeviceClient.create_from_connection_string(conn_str)
 
 bateriaDisponivel = 100
@@ -55,6 +55,10 @@ def insert_iotHub(nomePaciente,idadePaciente,generoPaciente,frequenciaCardiaca,d
         
         mensagem_json = json.dumps(dados)
         msg = Message(mensagem_json)
+
+        msg.content_encoding = "utf-8"
+        msg.content_type = "application/json"
+
         client.send_message(msg)
         tamanhoMensagem = (len(str(msg))) / 1024 
         client.disconnect()
@@ -68,14 +72,14 @@ def insert_iotHub(nomePaciente,idadePaciente,generoPaciente,frequenciaCardiaca,d
 def insert_db(nomePaciente,idadePaciente,generoPaciente,frequenciaCardiaca,dataLeitura,espacoUtilizado,tempoUtilizado,zonaDisponibilidade):
     try:  
         mydb = mysql.connector.connect(
-            # hostname="localhost",
-            # username="root",
-            # password="renato2002",
+            # host="frequenciacardiaca.mysql.database.azure.com",
+            # user="roott",
+            # password="Urubu100",
             # database = "frequenciacardiaca"
             user= "roott",
             password= "Urubu100",
             host= "frequenciacardiaca.mysql.database.azure.com",
-            database= "frequenciacardiaca"
+            database= "Grupo3"
         )
 
         if mydb.is_connected():
@@ -130,7 +134,7 @@ try:
 
             tamanhodaLista = len(vetTempoUtilizado)
           
-            insert_db(Paciente1.nome, Paciente1.idade, Paciente1.genero, FrequenciaCardiacaPaciente[-1],dataLeitura, espaco, duracao, "localhost")
+            #insert_db(Paciente1.nome, Paciente1.idade, Paciente1.genero, FrequenciaCardiacaPaciente[-1],dataLeitura, espaco, duracao, "localhost")
             insert_iotHub(Paciente1.nome, Paciente1.idade, Paciente1.genero, FrequenciaCardiacaPaciente[-1],dataLeitura, espaco, duracao, "localhost",bateriaDisponivel)
             
             #if len(FrequenciaCardiacaPaciente) % 10 == 0:
